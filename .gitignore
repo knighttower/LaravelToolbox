@@ -1,6 +1,12 @@
 /.*
 /.gitconfig
 /.console
+/.*
+/.gitconfig
+/.console
+/.*
+/.gitconfig
+/.console
 # Sensitive files
 .*
 **/.*

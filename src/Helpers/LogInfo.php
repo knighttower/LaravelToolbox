@@ -11,11 +11,15 @@ class LogInfo
      * write the message
      *
      * @param string $msg
+     * @param array $context
      * @param string|null $doc
      * @return void
      */
-    public static function write(string $msg, ?string $doc = 'info'): void
+    public static function write(string $msg, array $context = [], ?string $doc = 'info'): void
     {
+        if (!empty($context)) {
+            $msg .= ' | Context: ' . print_r($context, true);
+        }
         $formatMsg = self::setMsg($msg);
         self::save($formatMsg, $doc);
     }
@@ -24,19 +28,21 @@ class LogInfo
      * Alias to write
      *
      * @param string $msg
+     * @param array $context
      * @param string|null $doc
      * @return void
      */
-    public static function info(string $msg, ?string $doc = 'info'): void
+    public static function info(string $msg, array $context = [], ?string $doc = 'info'): void
     {
-        self::write($msg, $doc);
+
+        self::write($msg, $context, $doc);
     }
 
 
     /**
      * write the error
      *
-     * @param object|\Exception $exception
+     * @param string|\Exception $exception
      * @param array $context the context of the error
      * @param bool $throw whether to re-throw the exception after logging
      * @param string|null $doc

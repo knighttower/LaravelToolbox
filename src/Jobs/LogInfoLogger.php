@@ -47,14 +47,19 @@ class LogInfoLogger implements ShouldQueue
      */
     public function handle()
     {
-        $msg = $this->msg;
-        $doc = $this->doc;
         $date = Carbon::now()->toDateString();
+        $timestamp = Carbon::now()->toDateTimeString();
 
-        Storage::disk('log')->prepend("{$date}/{$doc}.txt", $msg);
-        $sep = str_repeat('=', 50);
-        $formattedMsg  = PHP_EOL . PHP_EOL . $sep . PHP_EOL . PHP_EOL;
-        $formattedMsg .= '----> ' . (string)$doc . ' ' . (string)$msg . PHP_EOL . PHP_EOL . $sep . PHP_EOL . PHP_EOL;
-        Storage::disk('log')->prepend("{$date}--Hourly--Log.txt", $formattedMsg);
+        // Log to specific document file
+        $dailyLogEntry = "[{$timestamp}] {$this->msg}" . PHP_EOL;
+        Storage::disk('log')->append("{$date}/{$this->doc}.txt", $dailyLogEntry);
+
+        // Log to hourly summary file
+        $separator = str_repeat('=', 50);
+        $hourlyLogEntry = PHP_EOL . $separator . PHP_EOL
+            . "[{$timestamp}] {$this->doc}: {$this->msg}" . PHP_EOL
+            . $separator . PHP_EOL;
+
+        Storage::disk('log')->append("{$date}--Hourly--Log.txt", $hourlyLogEntry);
     }
 }

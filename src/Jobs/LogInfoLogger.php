@@ -51,10 +51,10 @@ class LogInfoLogger implements ShouldQueue
         $doc = $this->doc;
         $date = Carbon::now()->toDateString();
 
-        Storage::disk('log')->prepend("/$date/$doc.txt", $msg);
+        Storage::disk('log')->prepend("{$date}/{$doc}.txt", $msg);
         $sep = str_repeat('=', 50);
         $formattedMsg  = PHP_EOL . PHP_EOL . $sep . PHP_EOL . PHP_EOL;
         $formattedMsg .= '----> ' . (string)$doc . ' ' . (string)$msg . PHP_EOL . PHP_EOL . $sep . PHP_EOL . PHP_EOL;
-        Storage::disk('log')->prepend("$date.'--Hourly--Log.txt", $formattedMsg);
+        Storage::disk('log')->prepend("{$date}--Hourly--Log.txt", $formattedMsg);
     }
 }

@@ -32,10 +32,6 @@ class ToolboxServiceProvider extends ServiceProvider
             $loader->alias('DBHelper', DBHelper::class);
             $loader->alias('DollarAmount', DollarAmount::class);
             $loader->alias('LogInfo', LogInfo::class);
-            $loader->alias('RequestHelper', RequestHelper::class);
-            $loader->alias('StringHelper', StringHelper::class);
-            $loader->alias('UrlHelper', UrlHelper::class);
-            $loader->alias('LocalApiPort', LocalApiPort::class);
         });
         $this->app->bind('ProxyHelper', function ($app) {
             return new ProxyHelper();

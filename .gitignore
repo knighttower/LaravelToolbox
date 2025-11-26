@@ -19,6 +19,8 @@ phpunit.xml
 phpcs.xml
 phpcs.php
 pint.json
+vendor
+composer.lock
 
 # -----------------------------------------
 # Overrides

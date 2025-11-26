@@ -3,6 +3,8 @@
 namespace Knighttower\Toolbox\Helpers;
 
 use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 
 class DateHelper
 {
@@ -11,11 +13,11 @@ class DateHelper
     // -------------------------
 
     /**
-    * Create a list of years for the app since 2016
-    *
-    * @param int $year The year it should start from
-    * @return object
-    */
+     * Create a list of years for the app since 2016
+     *
+     * @param int $year The year it should start from
+     * @return object
+     */
     public static function getYears(int $year = 2016): object
     {
         $diff = Carbon::createFromDate($year, 1, 1)->diff(Carbon::now())->format('%y');
@@ -30,15 +32,15 @@ class DateHelper
             $years[$yearLabel] = $yearValue;
         }
 
-        return (object) collect($years)->sortKeysDesc()->all();
+        return (object) Collection::make($years)->sortKeysDesc()->all();
     }
 
     /**
-    * Find the type of Format used
-    *
-    * @param string $date
-    * @return string|null
-    */
+     * Find the type of Format used
+     *
+     * @param string $date
+     * @return string|null
+     */
     public static function formatType(string $date): ?string
     {
         $patterns = [
@@ -59,11 +61,11 @@ class DateHelper
 
 
     /**
-    * Check or create a Carbon instance
-    *
-    * @param string|object $date
-    * @return bool
-    */
+     * Check or create a Carbon instance
+     *
+     * @param string|object $date
+     * @return bool
+     */
     private static function isCarbonInstance($date): bool
     {
         return (bool) ($date instanceof Illuminate\Support\Carbon || $date instanceof \Carbon\Carbon);
@@ -71,11 +73,11 @@ class DateHelper
 
 
     /**
-    * Detect a date by format
+     * Detect a date by format
      *
-    * @param string $date
-    * @return boolean
-    */
+     * @param string $date
+     * @return boolean
+     */
     public static function isDate($date): bool
     {
         if (self::isCarbonInstance($date)) {
@@ -85,13 +87,13 @@ class DateHelper
         if (self::formatType($date)) {
             foreach (self::getYears() as $key => $year) {
                 $cases = [
-                    '-'. $key,
+                    '-' . $key,
                     $key . '-',
-                    '/'. $key,
+                    '/' . $key,
                     $key . '/',
-                    '/'. substr($key, -2),
+                    '/' . substr($key, -2),
                 ];
-                if (\Str::contains($date, $cases)) {
+                if (Str::contains($date, $cases)) {
                     return true;
                 }
             }
@@ -106,11 +108,11 @@ class DateHelper
     // ----------------------
 
     /**
-    * Check or create a Carbon instance
-    *
-    * @param string|object $date
-    * @return Carbon
-    */
+     * Check or create a Carbon instance
+     *
+     * @param string|object $date
+     * @return Carbon
+     */
     public static function toCarbon($date): Carbon
     {
         if (self::isCarbonInstance($date)) {
@@ -126,44 +128,44 @@ class DateHelper
     }
 
     /**
-    * Standard date format
-    *
-    * @param String|Object $date
-    * @return String
-    */
+     * Standard date format
+     *
+     * @param String|Object $date
+     * @return String
+     */
     public static function date($date)
     {
         return self::toCarbon($date)->format('m-d-Y');
     }
 
     /**
-    * Standard date format
-    *
-    * @param String|Object $date
-    * @return String
-    */
+     * Standard date format
+     *
+     * @param String|Object $date
+     * @return String
+     */
     public static function dateExcel($date)
     {
         return self::toCarbon($date)->format('m/d/Y');
     }
 
     /**
-    * Standard date & time format
-    *
-    * @param String|Object $date
-    * @return String
-    */
+     * Standard date & time format
+     *
+     * @param String|Object $date
+     * @return String
+     */
     public static function dateTime($date)
     {
         return self::toCarbon($date)->format('m-d-Y @ g:i A');
     }
 
     /**
-    * Standard date format for Unix or Dbs
-    *
-    * @param String|Object $date
-    * @return String
-    */
+     * Standard date format for Unix or Dbs
+     *
+     * @param String|Object $date
+     * @return String
+     */
     public static function dateUnix($date)
     {
         return self::toCarbon($date)->format('Y-m-d');

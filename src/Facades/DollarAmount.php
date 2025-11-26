@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Facade;
 use Knighttower\Toolbox\Helpers\DollarAmountHelper;
 
 /**
-* @see \Knighttower\Toolbox\Helpers\DollarAmountHelper
-*/
+ * @see \Knighttower\Toolbox\Helpers\DollarAmountHelper
+ */
 class DollarAmount extends Facade
 {
     /**

@@ -28,7 +28,8 @@ class DBHelper
         switch ($driver) {
             case 'mysql':
                 $type = DB::selectOne(
-                    "SHOW COLUMNS FROM `$table` WHERE Field = ?", [$column]
+                    "SHOW COLUMNS FROM `$table` WHERE Field = ?",
+                    [$column]
                 )->Type;
                 preg_match('/^enum\((.*)\)$/', $type, $matches);
                 return $matches

@@ -2,13 +2,16 @@
 
 namespace Knighttower\Toolbox\Helpers;
 
+use NumberFormatter;
+use Illuminate\Support\Number;
+
 // convert/parse to standard dollar formats
 
 class DollarAmountHelper
 {
     /**
-    * Helper Constructor
-    */
+     * Helper Constructor
+     */
     public function __construct()
     {
         //set to US currency
@@ -17,67 +20,73 @@ class DollarAmountHelper
 
 
     /**
-    * Used to pre-validate the $amount and avoid WET code
+     * Test if the value is in dollar format (currency) or valid decimal amount
+     * Uses PHP's NumberFormatter for reliable parsing
      *
-    * @internal
-    * @param string $function
-    * @param mixed $args
-    * @return mixed
-    */
-    public function __call($function, $args)
+     * @param mixed $value
+     * @param bool $decimalMode If true, also accepts plain decimal numbers as valid dollar amounts
+     * @return bool
+     */
+    public function isDollarAmount($value, bool $decimalMode = false): bool
     {
-        $value = $args[0];
-        if (empty($value) && $value !== '0') {
-            return $value;
+        // Try currency format first
+        $currencyFormatter = new \NumberFormatter('en_US', \NumberFormatter::CURRENCY);
+        $currencyParsed = $currencyFormatter->parse($value);
+
+        if ($currencyParsed !== false) {
+            return true;
         }
 
-        return $this->{$function}(...$args);
+        // If decimal mode is enabled, also check for valid decimal numbers
+        if ($decimalMode) {
+            // Check if it's a valid number (including decimals)
+            if (is_numeric($value)) {
+                $numericValue = (float) $value;
+                // Ensure it's a reasonable dollar amount (not negative, reasonable precision)
+                return $numericValue >= 0 && $numericValue < PHP_FLOAT_MAX;
+            }
+        }
+
+        return false;
     }
 
 
     /**
-    * Test if the value is in dollar format
-     *
-    * @param mixed $value
-    * @return bool
-    */
-    private function isDollarAmount($value): bool
-    {
-        return !empty(preg_match('/(\$[0-9]+(.[0-9]+)?)+(\.|\,)?/', $value, $match));
-    }
-
-
-    /**
-     * remove the $
+     * Remove currency symbols and formatting, returning clean numeric string
+     * Uses NumberFormatter for proper currency parsing
      *
      * @param string $amount
      * @return string
      */
     private function removeSymbol(string $amount): string
     {
-        return preg_replace('/[\$,]/', '', $amount);
+        // If it's already a plain number, return as-is
+        if (is_numeric($amount)) {
+            return $amount;
+        }
+
+        // Try to parse as currency first
+        $formatter = new NumberFormatter('en_US', NumberFormatter::CURRENCY);
+        $parsed = $formatter->parse($amount);
+
+        if ($parsed !== false) {
+            return (string) $parsed;
+        }
+
+        // Fallback to regex for edge cases
+        return preg_replace('/[\$,\s]/', '', $amount);
     }
 
 
     /**
-     * remove the ,
+     * Convert to properly formatted currency
+     * Uses NumberFormatter for proper currency formatting
      *
      * @param string $amount
+     * @param string $currencyCode Currency code (defaults to USD for dollar amounts)
      * @return string
      */
-    private function removeFormat(string $amount): string
-    {
-        return str_replace(',', '', $amount);
-    }
-
-
-    /**
-     * from float to currency + round to 2
-     *
-     * @param string $amount
-     * @return string
-     */
-    private function toCurrency(string $amount): string
+    public function toCurrency(string $amount, string $currencyCode = 'USD'): string
     {
         $amount = $this->removeSymbol($amount);
 
@@ -85,53 +94,49 @@ class DollarAmountHelper
             return $amount;
         }
 
-        return number_format($amount, 2);
+        // Use NumberFormatter for proper currency formatting
+        $formatter = new NumberFormatter('en_US', NumberFormatter::CURRENCY);
+        return $formatter->formatCurrency((float) $amount, $currencyCode);
     }
 
 
     /**
-     * from currency to decimal
+     * Convert currency to decimal float value
+     * Uses improved removeSymbol method for proper parsing
      *
      * @param string $amount
-     * @return string
+     * @return float
+     * @throws \InvalidArgumentException When the input cannot be converted to a valid number
      */
-    private function toDecimal(string $amount): string
+    private function toDecimal(string $amount): float
     {
-        $amount = $this->removeSymbol($amount);
+        $cleanAmount = $this->removeSymbol($amount);
 
-        //remove the ',' when using currency format
-        $amount = $this->removeFormat($amount);
+        if (!is_numeric($cleanAmount)) {
+            throw new \InvalidArgumentException("Cannot convert '{$amount}' to a valid decimal amount");
+        }
 
-        //remove the extra decimals from "DB Double"
-        $amount = number_format($amount, 2, '.', '');
-
-        return floatval($amount);
+        // Convert to float and round to 2 decimal places for currency precision
+        return round((float) $cleanAmount, 2);
     }
 
 
     /**
-     * Convert into condensed string
+     * Convert into condensed string format (e.g., 1.2K, 3.4M, 5.6B)
+     * Uses Laravel's Number class for proper abbreviation formatting
      *
      * @param int|string $amount
-     * @return void|formatted string
+     * @return string Returns original value as string if conversion fails
      */
-    private function toString($amount): string
+    public function toString($amount): string
     {
-        //remove any $
-        $amount = $this->toDecimal($amount);
-
-        if ($amount < 1000) {
-            return number_format($amount, 2);
+        try {
+            $decimalAmount = $this->toDecimal($amount);
+            // Use Laravel's Number::abbreviate for better formatting
+            return Number::abbreviate($decimalAmount, precision: 1);
+        } catch (\InvalidArgumentException $e) {
+            // Return the original value as string if conversion fails
+            return (string) $amount;
         }
-        //else:
-        //formats to 0000 K|M
-        if ($amount < 1000000) {
-            return number_format($amount / 1000) . 'K';
-        }
-        if ($amount < 1000000000) {
-            return number_format($amount / 1000000, 2) . 'M';
-        }
-
-        return $amount;
     }
 }

@@ -1,11 +1,11 @@
 {
     "name": "knighttower/laravel-toolbox",
     "description": "Utilities",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "type": "project",
     "require": {
         "php": "^8",
-        "laravel/framework": "^10|^11|^12",
+        "laravel/framework": "^12|^13",
         "nesbot/carbon": "^3.7.0",
         "react/async": "^4.3",
         "react/promise": "^3.2"
